@@ -8,32 +8,86 @@
 
 using namespace std; 
 
-vector <vector <float>> generateMatrix(float sizeOfMatrix) {
+vector <vector <int>> generateMatrix(int sizeOfMatrix) {
 	
-	vector <vector <float>> matrix (sizeOfMatrix);
+	vector <vector <int>> matrix (sizeOfMatrix);
 	
 	for (int i = 0; i < sizeOfMatrix; i++) {
 		for (int j = 0; j < sizeOfMatrix; j++)
-			matrix[i].push_back(rand() / RAND_MAX);
+			matrix[i].push_back(rand());
 	}
 	
 	return matrix;
 }
 
-void displayMatrix(vector <vector <float>> matrix) {
+void displayMatrix(vector<vector<int>> *matrix) {
 	
-	for (int i = 0; i < matrix.size(); i++) {
-		for (int j = 0; j < matrix[i].size(); j++)
-			printf("|%d|", matrix[i][j]);
+	int N = (*matrix).size();
+	
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++)
+			printf("|%d|", (*matrix)[i][j]);
 		cout << endl;
 	}
 }
 
-vector <vector <float>> multiplyMatrices(vector<vector<float>> *matrix1, 
-										 vector<vector<float>> *matrix2) {
-	vector <vector <float>> matrixMultiplied((*matrix1).size(), 
-							vector<float>((*matrix1)[0].size()));
+vector <vector <int>> multiplyMatrices_ijk(vector<vector<int>> *matrix1, vector<vector<int>> *matrix2, int n) {
+	vector <vector <int>> matrixMultiplied((*matrix1).size(), vector<int>((*matrix1)[0].size()));
 	
+	int N = matrixMultiplied.size();
+	
+	clock_t t = clock();
+	
+#pragma omp parallel for num_threads(n) collapse(3) 
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
+			for (int k = 0; k < N; k++)
+				#pragma omp atomic
+				matrixMultiplied[i][j] += (*matrix1)[i][k] * (*matrix2)[k][j];
+
+	t = clock() - t;
+	printf("\nTime ijk loops is %d \n", t );
+	
+	return matrixMultiplied;
+}
+
+vector <vector <int>> multiplyMatrices_ikj(vector<vector<int>> *matrix1, vector<vector<int>> *matrix2, int n) {
+	vector <vector <int>> matrixMultiplied((*matrix1).size(), vector<int>((*matrix1)[0].size()));
+	
+	int N = matrixMultiplied.size();
+	
+	clock_t t = clock();
+	
+#pragma omp parallel for num_threads(n) collapse(3)
+	for (int i = 0; i < N; i++)
+		for (int k = 0; k < N; k++)
+			for (int j = 0; j < N; j++)
+				#pragma omp atomic
+				matrixMultiplied[i][j] += (*matrix1)[i][k] * (*matrix2)[k][j];
+
+	t = clock() - t;
+	printf("\nTime ikj loops is %d \n", t);
+	
+	return matrixMultiplied;
+}
+
+vector <vector <int>> multiplyMatrices_jki(vector<vector<int>> *matrix1, vector<vector<int>> *matrix2, int n) {
+	vector <vector <int>> matrixMultiplied((*matrix1).size(), vector<int>((*matrix1)[0].size()));
+	
+	int N = matrixMultiplied.size();
+	
+	clock_t t = clock();
+	
+#pragma omp parallel for num_threads(n) collapse(3) 
+	for (int j = 0; j < N; j++)
+		for (int k = 0; k < N; k++)
+			for (int i = 0; i < N; i++)
+				#pragma omp atomic
+				matrixMultiplied[i][j] += (*matrix1)[i][k] * (*matrix2)[k][j];
+
+			
+	t = clock() - t;
+	printf("\nTime jki loops is %d \n", t);
 	
 	return matrixMultiplied;
 }
@@ -53,15 +107,38 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 	
-	vector <vector <float>> matrix1 = generateMatrix(sizeOfMatrix), 
+	vector <vector <int>> matrix1 = generateMatrix(sizeOfMatrix), 
 							matrix2 = generateMatrix(sizeOfMatrix); 
-	
-	cout << matrix1[0][0] << endl;
-	
+		
 	// display small matrix
-	displayMatrix(matrix1);
-	cout << endl;
-	displayMatrix(matrix2);
+	//displayMatrix(&matrix1);
+	//cout << endl;
+	//isplayMatrix(&matrix2);
 	
+	vector <vector <int>> matrix (sizeOfMatrix, vector<int>(sizeOfMatrix));
+	
+	printf("\nijk | n | Time, s | Eff\n");
+	printf("---------------------------------");
+	for (int n = 1; n <= 10; n++) {
+		printf("\nCase of %d threads", n);
+		matrix = multiplyMatrices_ijk(&matrix1, &matrix2, n);
+	}
+	//printf("\nResult of matrix multiplication: \n");
+	//displayMatrix(&matrix);
+	
+	for (int n = 1; n <= 10; n++) {
+		printf("\nCase of %d threads", n);
+		matrix = multiplyMatrices_ikj(&matrix1, &matrix2, n);
+	}
+	//printf("\nResult of matrix multiplication: \n");
+	//displayMatrix(&matrix);
+	
+	for (int n = 1; n <= 10; n++) {
+		printf("\nCase of %d threads", n);
+		matrix = multiplyMatrices_jki(&matrix1, &matrix2, n);
+	}
+	//printf("\nResult of matrix multiplication: \n");
+	//displayMatrix(&matrix);
+
 	return 0;
 }
