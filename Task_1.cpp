@@ -10,23 +10,23 @@ using namespace std;
 
 int maximumValue(vector <int> arr) {
 	
-	time_t startTime, delta;
+	clock_t t;
 	int max_element = 0;
 	
 	cout << "\n\nn  |  time, s\n----------" << endl;
 	
 	for (int n = 1; n <= 10; n++) {
-		startTime = time(NULL);
+		t = clock();
 		
-#pragma omp parallel for shared(max_element, arr) num_threads(n) 
-		for (int i = 0; i < arr.size(); i++)
-			#pragma omp critical 
-			{
-				if (arr[i] > max_element)
-					max_element = arr[i];
+#pragma omp parallel for num_threads(n) reduction(max : max_element)
+		for (int i = 0; i < arr.size(); i++) {
+				//if (arr[i] > max_element)
+				//	max_element = arr[i];
+				max_element = max(max_element, arr[i]);
 			}
-		delta = time(NULL) - startTime;
-		cout << n << "  |  " << delta << endl;
+			
+		// delta = time(NULL) - startTime;
+		cout << n << "  |  " << (clock() - t) << endl;
 	}
 	
 	return max_element;
@@ -37,7 +37,7 @@ vector <int> generateVector(int sizeOfArray) {
 	vector <int> arr(0);
 	
 	for (int i = 0; i < sizeOfArray; i++) 
-		arr.push_back(rand() * 100);
+		arr.push_back(rand() + rand());
 	
 	return arr;
 }
@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
 	
 	srand(time(0));
 	
-	vector <int> arr (sizeOfArray);
-	generate(arr.begin(), arr.end(), rand);
+	vector <int> arr = generateVector(sizeOfArray);
+	//generate(arr.begin(), arr.end(), rand);
 	
 	//for (int i = 0; i < arr.size(); i++)
 	//	cout << arr[i] << " ";
