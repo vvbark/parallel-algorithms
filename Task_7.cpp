@@ -1,8 +1,5 @@
 #include <iostream>
 #include <mpi.h>
-#include <cstdlib>
-#include "bits/stdc++.h"
-#include <vector>
 
 using namespace std;
 
