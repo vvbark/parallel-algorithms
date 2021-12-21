@@ -19,14 +19,9 @@ int main(int argc, char **argv)
 	if (rank == 0) prev = size - 1;
 	if (rank == size - 1) next = 0;
 	
-	MPI_Irecv(&buf[0], 1, MPI_INT, prev, 5, MPI_COMM_WORLD, &reqs[0]);
-	MPI_Irecv(&buf[1], 1, MPI_INT, next, 6, MPI_COMM_WORLD, &reqs[1]);
-	
-	MPI_Isend(&rank, 1, MPI_INT, prev, 6, MPI_COMM_WORLD, &reqs[2]);
-	MPI_Isend(&rank, 1, MPI_INT, next, 5, MPI_COMM_WORLD, &reqs[3]);
-	
-	MPI_Waitall(4, reqs, stats);
-	
+	MPI_Sendrecv(&rank, 1, MPI_INT, next, 5, &buf[0], 1, MPI_INT, prev, 5, MPI_COMM_WORLD, &stats[0]);
+	MPI_Sendrecv(&rank, 1, MPI_INT, prev, 6, &buf[1], 1, MPI_INT, next, 6, MPI_COMM_WORLD, &stats[1]);
+		
 	printf("Current process : %d\nIt recieved %d from the prev process %d\nIt recieved %d from the next process %d\n\n", rank, buf[0], prev, buf[1], next);
 		
 	MPI_Finalize();
