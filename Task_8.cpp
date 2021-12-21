@@ -6,6 +6,12 @@
 
 using namespace std;
 
+void fillArray(int * array[], int length)
+{
+	for (int i = 0; i < length; i++)
+		array[i] = 1;
+}
+
 int main(int argc, char **argv)
 {	
 	int size, rank, averaging = 10000, step = 10;;
