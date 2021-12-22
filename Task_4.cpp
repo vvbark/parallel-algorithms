@@ -14,12 +14,14 @@ int main(int argc, char* argv[]) {
 	if (rank == 2) // the number of my task
 	{
 		cout << "Receaving from process " << rank << "\n";
-		MPI_Recv(&message, 1, MPI_INT, 0,
-				MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		cout << "Hello from process --- " << message << endl;
+		for (int i = 0; i < n - 1; i++) {
+			MPI_Recv(&message, 1, MPI_INT, MPI_ANY_SOURCE,
+					MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			cout << "Hello from process --- " << message << endl;
+		}
 	}
 	
-	if (rank == 0) // root process
+	if (rank != 2) // root process
 		MPI_Send(&rank, 1, MPI_INT, 2, 0, MPI_COMM_WORLD);
 		// there are we send from main process the message 
 		// (rank) to the process '2'
