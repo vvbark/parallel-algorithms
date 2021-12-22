@@ -3,15 +3,17 @@
 #define n 1000
 
 void smod5(void *a, void *b, int *l, MPI_Datatype *type) {
+	int *input = (int*)a;
+	int *output = (int*)b;
 	for (int i = 0; i < *l; i++)
-		((int*)b)[i] = (((int*)a)[i] + ((int*)b)[i]) % 5;
+		output[i] = (input[i] + output[i]) % 5;
 }
 
 void maximum(void *a, void *b, int *l, MPI_Datatype *type) {
+	int *input = (int*)a;
+	int *output = (int*)b;
 	for (int i = 0; i < *l; i++)
-		if (((int*)b)[i] > ((int*)a)[i]) { 
-			((int*)b)[i] = ((int*)a)[i];
-		}
+		if (input[i] > output[i]) output[i] = input[i];
 }
 
 int main(int argc, char **argv)
