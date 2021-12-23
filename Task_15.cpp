@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 	MPI_Comm_group(MPI_COMM_WORLD, &group);
 
 	for (i = 0; i < size / 2; i++) ranks[i] = i;
-
+	
 	if (rank < size / 2) MPI_Group_incl(group, size / 2, ranks, &new_group);
 	else MPI_Group_excl(group, size / 2, ranks, &new_group);
 	
@@ -25,6 +25,6 @@ int main(int argc, char **argv)
 	MPI_Group_rank(new_group, &new_rank);
 	
 	printf("rank = %d, newrank = %d, rbuf = %d\n", rank, new_rank, rbuf);
-		
+	
 	MPI_Finalize();
 }
